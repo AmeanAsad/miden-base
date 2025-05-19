@@ -42,21 +42,45 @@ The `consolidated_benchmarks.json` file contains a summary of all proving benchm
 Example `consolidated_benchmarks.json` structure:
 ```json
 {
-  "timestamp": "2023-10-15T14:30:22Z",
-  "benchmarks": [
-    {
-      "name": "fibonacci_10",
-      "proving_time_ms": 124.5,
-      "memory_usage_mb": 45.2,
-      "peak_memory_mb": 67.8
-    },
-    {
-      "name": "merkle_path_verification",
-      "proving_time_ms": 378.9,
-      "memory_usage_mb": 103.5,
-      "peak_memory_mb": 128.2
-    }
-    // ... more benchmarks
-  ]
+  "prove_consume_note_with_new_account": {
+    "id": "miden_proving/prove_consume_note_with_new_account",
+    "mean_sec": 2.9489723874,
+    "mean_lower_bound_sec": 2.924891996,
+    "mean_upper_bound_sec": 2.9777331873,
+    "std_dev_sec": 0.04551027448900068,
+    "times_sec": [
+      2.98336025,
+      3.051340166,
+      2.972870583,
+      2.943372125,
+      2.923954958,
+      2.939220542,
+      2.945244416,
+      2.890069959,
+      2.9041745,
+      2.936116375
+    ],
+    "trial_count": 10
+  },
+  "prove_consume_multiple_notes": {
+    "id": "miden_proving/prove_consume_multiple_notes",
+    "mean_sec": 2.0523832292,
+    "mean_lower_bound_sec": 2.0268005916,
+    "mean_upper_bound_sec": 2.0808349876,
+    "std_dev_sec": 0.04648980316499867,
+    "times_sec": [
+      2.118166333,
+      2.121326834,
+      2.112017625,
+      2.028088083,
+      2.014474333,
+      2.000334667,
+      2.018519542,
+      2.024895417,
+      2.043308542,
+      2.042700916
+    ],
+    "trial_count": 10
+  }
 }
 ```
