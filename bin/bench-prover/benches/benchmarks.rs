@@ -12,8 +12,7 @@ fn core_benchmarks(c: &mut Criterion) {
     group
         .sampling_mode(SamplingMode::Flat)
         .sample_size(10)
-        .warm_up_time(Duration::from_millis(500))
-        .measurement_time(Duration::from_secs(2));
+        .warm_up_time(Duration::from_millis(1000));
 
     group.bench_function(BENCH_CONSUME_NOTE_NEW_ACCOUNT, |b| {
         b.iter(|| black_box(prove_consume_note_with_new_account()))
