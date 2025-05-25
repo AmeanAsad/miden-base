@@ -5,7 +5,7 @@ use bench_prover::{
     benchmark_names::{BENCH_CONSUME_MULTIPLE_NOTES, BENCH_CONSUME_NOTE_NEW_ACCOUNT, BENCH_GROUP},
 };
 use criterion::{Criterion, SamplingMode, black_box, criterion_group, criterion_main};
-use miden_testing::utils::prove_and_verify_transaction;
+use miden_testing::utils::prove_transaction;
 
 fn core_benchmarks(c: &mut Criterion) {
     let mut group = c.benchmark_group(BENCH_GROUP);
@@ -20,7 +20,7 @@ fn core_benchmarks(c: &mut Criterion) {
             .expect("Failed to set up transaction for consuming note with new account");
 
         // Only benchmark proving and verification
-        b.iter(|| black_box(prove_and_verify_transaction(executed_transaction.clone())));
+        b.iter(|| black_box(prove_transaction(executed_transaction.clone())));
     });
 
     group.bench_function(BENCH_CONSUME_MULTIPLE_NOTES, |b| {
@@ -28,7 +28,7 @@ fn core_benchmarks(c: &mut Criterion) {
             .expect("Failed to set up transaction for consuming multiple notes");
 
         // Only benchmark the proving and verification
-        b.iter(|| black_box(prove_and_verify_transaction(executed_transaction.clone())));
+        b.iter(|| black_box(prove_transaction(executed_transaction.clone())));
     });
 
     group.finish();
