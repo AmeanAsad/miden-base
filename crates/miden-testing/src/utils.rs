@@ -13,6 +13,7 @@ use miden_tx::{
     LocalTransactionProver, ProvingOptions, TransactionProver, TransactionVerifier,
     TransactionVerifierError,
 };
+use vm_processor::DeserializationError;
 
 // TEST HELPERS
 // ================================================================================================
@@ -21,9 +22,9 @@ pub fn input_note_data_ptr(note_idx: u32) -> memory::MemoryAddress {
     memory::INPUT_NOTE_DATA_SECTION_OFFSET + note_idx * memory::NOTE_MEM_SIZE
 }
 
-pub fn prove_and_verify_transaction(
+pub fn prove_transaction(
     executed_transaction: ExecutedTransaction,
-) -> Result<(), TransactionVerifierError> {
+) -> Result<ProvenTransaction, DeserializationError> {
     // Prove the transaction
     let executed_transaction_id = executed_transaction.id();
     let prover = LocalTransactionProver::new(ProvingOptions::default());
@@ -33,7 +34,13 @@ pub fn prove_and_verify_transaction(
 
     // Serialize & deserialize the ProvenTransaction
     let serialized_transaction = proven_transaction.to_bytes();
-    let proven_transaction = ProvenTransaction::read_from_bytes(&serialized_transaction).unwrap();
+    ProvenTransaction::read_from_bytes(&serialized_transaction)
+}
+
+pub fn prove_and_verify_transaction(
+    executed_transaction: ExecutedTransaction,
+) -> Result<(), TransactionVerifierError> {
+    let proven_transaction = prove_transaction(executed_transaction).unwrap();
 
     // Verify that the generated proof is valid
     let verifier = TransactionVerifier::new(miden_objects::MIN_PROOF_SECURITY_LEVEL);
