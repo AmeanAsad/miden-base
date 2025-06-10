@@ -4,6 +4,7 @@ use alloc::{
     sync::Arc,
 };
 
+use lunal_attestation::verify::verify_attestation;
 use miden_objects::{
     transaction::{ProvenTransaction, TransactionWitness},
     utils::{Deserializable, DeserializationError, Serializable},
@@ -66,8 +67,19 @@ impl RemoteTransactionProver {
         };
 
         #[cfg(not(target_arch = "wasm32"))]
+        use tonic::transport::Endpoint;
+        let mut endpoint = Endpoint::from_shared(self.endpoint.clone())
+            .map_err(|_| RemoteProverError::ConnectionFailed(self.endpoint.to_string()))?;
+
+        // enable TLS for HTTPs endpoints
+        if self.endpoint.starts_with("https://") {
+            endpoint = endpoint
+                .tls_config(tonic::transport::ClientTlsConfig::new().with_native_roots())
+                .map_err(|e| RemoteProverError::ConnectionFailed(e.to_string()))?;
+        }
+
         let new_client = {
-            ApiClient::connect(self.endpoint.clone())
+            ApiClient::connect(endpoint)
                 .await
                 .map_err(|_| RemoteProverError::ConnectionFailed(self.endpoint.to_string()))?
         };
@@ -102,6 +114,17 @@ impl TransactionProver for RemoteTransactionProver {
         let response = client.prove(request).await.map_err(|err| {
             TransactionProverError::other_with_source("failed to prove transaction", err)
         })?;
+
+        // Extract the attestation report from metadata
+        if let Some(attestation_value) = response.metadata().get("Attestation-Report") {
+            // Verify the attestation
+            verify_attestation(attestation_value.to_str()).await.map_err(|err| {
+                TransactionProverError::other_with_source(
+                    "failed to verify transaction attestation",
+                    err,
+                )
+            })?;
+        }
 
         // Deserialize the response bytes back into a ProvenTransaction.
         let proven_transaction =

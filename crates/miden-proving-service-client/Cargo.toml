@@ -26,13 +26,14 @@ tonic = { version = "0.12", default-features = false, features = ["prost", "code
 getrandom = { version = "0.3", features = ["wasm_js"] }
 
 [target.'cfg(not(all(target_arch = "wasm32", target_os = "unknown")))'.dependencies]
-tonic = { version = "0.12", default-features = false, features = ["prost", "codegen", "transport"] }
+tonic = { version = "0.12", default-features = false, features = ["prost", "codegen", "transport", "tls","tls-roots"] }
 tonic-web = { version = "0.12", optional = true }
 
 [dependencies]
 async-trait = "0.1"
 miden-objects = { workspace = true, default-features = false, optional = true }
 miden-tx = { workspace = true, default-features = false, optional = true }
+lunal-attestation = { git = "https://github.com/lunal-dot-dev/attestation-rs.git" }
 prost = { version = "0.13", default-features = false, features = ["derive"] }
 thiserror = "2.0"
 tokio = { version = "1.44", default-features = false, features = ["sync"], optional = true }
@@ -43,4 +44,3 @@ prost = { version = "0.13", default-features = false, features = ["derive"] }
 prost-build = { version = "0.13" }
 protox = { version = "0.7" }
 tonic-build = { version = "0.12" }
-
