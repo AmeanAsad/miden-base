@@ -35,7 +35,7 @@ tonic = { version = "0.12", default-features = false, features = [
     "tls-native-roots",
 ] }
 tonic-web = { version = "0.12", optional = true }
-lunal-attestation = { git = "https://github.com/lunal-dot-dev/attestation-rs.git", optional = true }
+lunal-attestation = { git = "https://github.com/lunal-dot-dev/attestation-rs.git", branch = "feat/wasm-verification", optional = true }
 
 
 [dependencies]
