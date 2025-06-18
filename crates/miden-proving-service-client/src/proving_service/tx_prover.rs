@@ -116,13 +116,22 @@ impl TransactionProver for RemoteTransactionProver {
         #[cfg(feature = "attestation")]
         // Extract the attestation report from metadata
         if let Some(attestation_value) = response.metadata().get("Attestation-Report") {
+            println!("Found attestation report, verifying...");
             // Verify the attestation
-            verify_attestation(attestation_value.to_str().unwrap()).await.map_err(|err| {
-                TransactionProverError::other_with_source(
-                    "failed to verify transaction attestation",
-                    err,
-                )
-            })?;
+            match verify_attestation(attestation_value.to_str().unwrap()).await {
+                Ok(output) => {
+                    println!("Attestation verification successful {:?}", output);
+                },
+                Err(err) => {
+                    println!("Attestation verification failed: {:?}", err);
+                    return Err(TransactionProverError::other_with_source(
+                        "failed to verify transaction attestation",
+                        err,
+                    ));
+                },
+            }
+        } else {
+            println!("No attestation report found in response");
         }
 
         // Deserialize the response bytes back into a ProvenTransaction.
