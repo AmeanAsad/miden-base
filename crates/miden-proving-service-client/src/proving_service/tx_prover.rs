@@ -4,6 +4,7 @@ use alloc::{
     sync::Arc,
 };
 use core::time::Duration;
+use std::println;
 
 #[cfg(feature = "attestation")]
 use lunal_attestation::verify::verify_attestation;
