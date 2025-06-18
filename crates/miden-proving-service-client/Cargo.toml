@@ -19,6 +19,7 @@ std = ["miden-objects/std", "miden-tx/std"]
 tx-prover = ["miden-tx/async", "dep:tokio", "dep:miden-objects"]
 batch-prover = ["dep:tokio", "dep:miden-objects"]
 block-prover = ["dep:tokio", "dep:miden-objects"]
+attestation = ["dep:lunal-attestation"]
 
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
 tonic-web-wasm-client = { version = "0.6", default-features = false }
@@ -34,6 +35,8 @@ tonic = { version = "0.12", default-features = false, features = [
     "tls-native-roots",
 ] }
 tonic-web = { version = "0.12", optional = true }
+lunal-attestation = { git = "https://github.com/lunal-dot-dev/attestation-rs.git", optional = true }
+
 
 [dependencies]
 async-trait = "0.1"

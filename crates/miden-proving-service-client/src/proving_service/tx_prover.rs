@@ -5,6 +5,8 @@ use alloc::{
 };
 use core::time::Duration;
 
+#[cfg(feature = "attestation")]
+use lunal_attestation::verify::verify_attestation;
 use miden_objects::{
     transaction::{ProvenTransaction, TransactionWitness},
     utils::{Deserializable, DeserializationError, Serializable},
@@ -24,7 +26,7 @@ use crate::{
 // REMOTE TRANSACTION PROVER
 // ================================================================================================
 
-/// A [RemoteTransactionProver] is a transaction prover that sends witness data to a remote
+/// A [`RemoteTransactionProver`] is a transaction prover that sends witness data to a remote
 /// gRPC server and receives a proven transaction.
 ///
 /// When compiled for the `wasm32-unknown-unknown` target, it uses the `tonic_web_wasm_client`
@@ -42,7 +44,7 @@ pub struct RemoteTransactionProver {
 }
 
 impl RemoteTransactionProver {
-    /// Creates a new [RemoteTransactionProver] with the specified gRPC server endpoint. The
+    /// Creates a new [`RemoteTransactionProver`] with the specified gRPC server endpoint. The
     /// endpoint should be in the format `{protocol}://{hostname}:{port}`.
     pub fn new(endpoint: impl Into<String>) -> Self {
         RemoteTransactionProver {
@@ -77,10 +79,7 @@ impl RemoteTransactionProver {
                 .connect()
                 .await
                 .map_err(|err| RemoteProverError::ConnectionFailed(err.into()))?;
-
-            ApiClient::connect(self.endpoint.clone())
-                .await
-                .map_err(|err| RemoteProverError::ConnectionFailed(err.into()))?
+            ApiClient::new(channel)
         };
 
         *client = Some(new_client);
@@ -113,6 +112,18 @@ impl TransactionProver for RemoteTransactionProver {
         let response = client.prove(request).await.map_err(|err| {
             TransactionProverError::other_with_source("failed to prove transaction", err)
         })?;
+
+        #[cfg(feature = "attestation")]
+        // Extract the attestation report from metadata
+        if let Some(attestation_value) = response.metadata().get("Attestation-Report") {
+            // Verify the attestation
+            verify_attestation(attestation_value.to_str().unwrap()).await.map_err(|err| {
+                TransactionProverError::other_with_source(
+                    "failed to verify transaction attestation",
+                    err,
+                )
+            })?;
+        }
 
         // Deserialize the response bytes back into a ProvenTransaction.
         let proven_transaction =
