@@ -73,7 +73,7 @@ impl RemoteTransactionProver {
         let new_client = {
             let endpoint = tonic::transport::Endpoint::try_from(self.endpoint.clone())
                 .map_err(|err| RemoteProverError::ConnectionFailed(err.into()))?
-                .timeout(Duration::from_millis(10000));
+                .timeout(Duration::from_millis(60000));
             let channel = endpoint
                 .tls_config(tonic::transport::ClientTlsConfig::new().with_native_roots())
                 .map_err(|err| RemoteProverError::ConnectionFailed(err.into()))?
