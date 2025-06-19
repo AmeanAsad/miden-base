@@ -65,24 +65,49 @@ impl ProverRpcApi {
         &self,
         transaction_witness: TransactionWitness,
     ) -> Result<Response<ProvingResponse>, tonic::Status> {
+        let start_time = std::time::Instant::now();
+        tracing::info!("Starting transaction proof generation");
+
         let prover = match &self.prover {
             Prover::Transaction(prover) => prover,
             _ => return Err(Status::unimplemented("Transaction prover is not enabled")),
         };
 
-        let proof = prover
+        tracing::info!("Acquiring prover lock...");
+        let lock_start = std::time::Instant::now();
+        let mut prover_guard = prover
             .try_lock()
-            .map_err(|_| Status::resource_exhausted("Server is busy handling another request"))?
-            .prove(transaction_witness)
-            .map_err(internal_error)?;
+            .map_err(|_| Status::resource_exhausted("Server is busy handling another request"))?;
+        let lock_duration = lock_start.elapsed();
+        tracing::info!("Prover lock acquired in {:?}", lock_duration);
+
+        tracing::info!("Starting proof computation...");
+        let prove_start = std::time::Instant::now();
+        let proof = prover_guard.prove(transaction_witness).map_err(internal_error)?;
+        let prove_duration = prove_start.elapsed();
+        tracing::info!("Proof computation completed in {:?}", prove_duration);
 
         // Record the transaction_id in the current tracing span
         let transaction_id = proof.id();
         tracing::Span::current().record("id", tracing::field::display(&transaction_id));
 
-        Ok(Response::new(ProvingResponse { payload: proof.to_bytes() }))
-    }
+        tracing::info!("Serializing proof...");
+        let serialize_start = std::time::Instant::now();
+        let payload = proof.to_bytes();
+        let serialize_duration = serialize_start.elapsed();
+        tracing::info!("Proof serialization completed in {:?}", serialize_duration);
 
+        let total_duration = start_time.elapsed();
+        tracing::info!(
+            "Transaction proof generation completed - Total: {:?}, Lock: {:?}, Prove: {:?}, Serialize: {:?}",
+            total_duration,
+            lock_duration,
+            prove_duration,
+            serialize_duration
+        );
+
+        Ok(Response::new(ProvingResponse { payload }))
+    }
     #[instrument(
         target = MIDEN_PROVING_SERVICE,
         name = "proving_service:prove_batch",
