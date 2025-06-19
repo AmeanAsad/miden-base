@@ -29,6 +29,8 @@ rand = { workspace = true }
 thiserror = { workspace = true }
 vm-processor = { workspace = true }
 winter-maybe-async = { version = "0.12" }
+tracing = "0.1"
+
 
 [dev-dependencies]
 anyhow = { version = "1.0", default-features = false, features = ["std", "backtrace"]}
