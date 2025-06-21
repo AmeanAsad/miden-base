@@ -7,7 +7,7 @@ use core::time::Duration;
 use std::println;
 
 #[cfg(feature = "attestation")]
-use lunal_attestation::verify::verify_attestation;
+use lunal_attestation::sev_snp::verify::verify_attestation;
 use miden_objects::{
     transaction::{ProvenTransaction, TransactionWitness},
     utils::{Deserializable, DeserializationError, Serializable},
